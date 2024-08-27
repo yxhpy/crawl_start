@@ -2,10 +2,10 @@ package com.yxhpy.crawl_start.utils;
 
 import com.yxhpy.crawl_start.entity.ParseHtmlValueDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
+import io.netty.util.internal.shaded.org.jctools.util.RangeUtil;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.internal.operators.observable.ObservableIntervalRange;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.Synchronized;
 import okhttp3.*;
@@ -13,8 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +49,7 @@ public class UrlDownload {
 
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                    emitter.onError(new Exception(e.getMessage()));
+                    emitter.onError(e);
                 }
             });
         }));
@@ -60,7 +58,6 @@ public class UrlDownload {
     public Observable<RequestUrlValueDTO> requestAndRetry(String url) {
         return request(url)
                 .retry(2)
-                .timeout(10, TimeUnit.SECONDS)
                 .onErrorResumeNext(Observable::error);
     }
 
@@ -73,7 +70,7 @@ public class UrlDownload {
         List<RequestUrlValueDTO> results = new CopyOnWriteArrayList<>();
         Disposable completed = Observable.fromIterable(urls)
                 .subscribeOn(Schedulers.io())
-                .flatMap(this::requestAndRetry)
+                .flatMap(this::requestAndRetry, true)
                 .observeOn(Schedulers.computation())
                 .subscribe((results::add), e -> {
                     System.out.println("异常");
@@ -93,9 +90,10 @@ public class UrlDownload {
     }
 
     public static void main(String[] args) {
-
         UrlDownload urlDownload = new UrlDownload();
         List<String> collect = List.of(
+                "https://www.hao123.com",
+                "https://www.hao123.com1",
                 "https://www.hao123.com"
         );
         while (!collect.isEmpty()) {
@@ -103,6 +101,7 @@ public class UrlDownload {
             HtmlParse htmlParse = new HtmlParse();
             List<ParseHtmlValueDTO> run1 = htmlParse.run(run);
             collect = run1.stream().map(ParseHtmlValueDTO::getUrls).flatMap(List::stream).collect(Collectors.toList());
+            collect = collect.subList(0, Math.min(collect.size(), 100));
             System.out.println(collect.size());
         }
     }
