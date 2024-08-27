@@ -1,8 +1,11 @@
 package com.yxhpy.crawl_start.utils;
 
+import com.yxhpy.crawl_start.entity.ParseHtmlValueDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.Synchronized;
 import okhttp3.*;
@@ -10,9 +13,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -45,9 +51,7 @@ public class UrlDownload {
 
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                    if (!emitter.isDisposed()) {
-                        emitter.onError(new Exception(e.getMessage()));
-                    }
+                    emitter.onError(new Exception(e.getMessage()));
                 }
             });
         }));
@@ -55,21 +59,24 @@ public class UrlDownload {
 
     public Observable<RequestUrlValueDTO> requestAndRetry(String url) {
         return request(url)
-                .retry(3)
-                .timeout(10, TimeUnit.SECONDS) // 设置 30 秒超时
+                .retry(2)
+                .timeout(10, TimeUnit.SECONDS)
                 .onErrorResumeNext(Observable::error);
     }
 
     @Synchronized
     public List<RequestUrlValueDTO> run(List<String> urls) {
-        client = new OkHttpClient();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        client = builder
+                .callTimeout(10, TimeUnit.SECONDS)
+                .build();
         List<RequestUrlValueDTO> results = new CopyOnWriteArrayList<>();
         Disposable completed = Observable.fromIterable(urls)
                 .subscribeOn(Schedulers.io())
                 .flatMap(this::requestAndRetry)
                 .observeOn(Schedulers.computation())
                 .subscribe((results::add), e -> {
-                    System.out.println(e.getMessage());
+                    System.out.println("异常");
                 }, () -> {
                     System.out.println("Completed");
                 });
@@ -83,5 +90,20 @@ public class UrlDownload {
         client.dispatcher().executorService().shutdown();
         client.connectionPool().evictAll();
         return results;
+    }
+
+    public static void main(String[] args) {
+
+        UrlDownload urlDownload = new UrlDownload();
+        List<String> collect = List.of(
+                "https://www.hao123.com"
+        );
+        while (!collect.isEmpty()) {
+            List<RequestUrlValueDTO> run = urlDownload.run(collect);
+            HtmlParse htmlParse = new HtmlParse();
+            List<ParseHtmlValueDTO> run1 = htmlParse.run(run);
+            collect = run1.stream().map(ParseHtmlValueDTO::getUrls).flatMap(List::stream).collect(Collectors.toList());
+            System.out.println(collect.size());
+        }
     }
 }

@@ -7,11 +7,14 @@ spring:
       batch-size: 100
       properties:
         linger:
-          ms: 10000
+          ms: 30000
         compression:
           type: snappy
         enable:
           idempotence: true
+        max:
+          request:
+            size: 14225180
       acks: "all"
     consumer:
       bootstrap-servers: 192.168.3.63:9092
@@ -26,7 +29,8 @@ spring:
         partition:
           assignment:
             strategy: org.apache.kafka.clients.consumer.StickyAssignor
-      fetch-min-size: 1
+      fetch-min-size: 100
+      fetch-max-wait: 10000
   redis:
     host: 192.168.3.62
     database: 0
