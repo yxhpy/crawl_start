@@ -40,7 +40,6 @@ public class Consumer {
         for (RequestUrlValueDTO requestUrlValueDTO : run) {
             producer.sendMessageParseHtml(KTopics.PARSE_HTML, requestUrlValueDTO);
         }
-
     }
 
     @KafkaListener(topics = KTopics.PARSE_HTML)

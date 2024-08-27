@@ -14,5 +14,6 @@ import java.util.List;
 public class ParseHtmlValueDTO {
     private String url;
     private String html;
+    private String title;
     private List<String> urls;
 }

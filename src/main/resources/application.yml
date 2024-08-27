@@ -4,17 +4,12 @@ spring:
       bootstrap-servers: 192.168.3.63:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      batch-size: 100
+      batch-size: 16384
       properties:
-        linger:
-          ms: 30000
-        compression:
-          type: snappy
-        enable:
-          idempotence: true
-        max:
-          request:
-            size: 14225180
+        linger.ms: 100
+        compression.type: lz4
+        enable.idempotence: true
+        max.request.size: 20971520
       acks: "all"
     consumer:
       bootstrap-servers: 192.168.3.63:9092
@@ -23,20 +18,32 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      max-poll-records: 100
-      heartbeat-interval: 33
+      max-poll-records: 500
+      heartbeat-interval: 3000
       properties:
-        partition:
-          assignment:
-            strategy: org.apache.kafka.clients.consumer.StickyAssignor
-      fetch-min-size: 100
-      fetch-max-wait: 10000
+        partition.assignment.strategy: org.apache.kafka.clients.consumer.CooperativeStickyAssignor  # 使用协作式分配器
+        max.poll.interval.ms: 300000  # 增加轮询间隔，允许更长的处理时间
+      fetch-min-size: 1
+      fetch-max-wait: 500
   redis:
     host: 192.168.3.62
     database: 0
     password: 520612lgh
+    timeout: 3000  # 添加连接超时时间（毫秒）
+    lettuce: # 使用Lettuce客户端
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
 
 logging:
   level:
     org.springframework.kafka: DEBUG
 
+# 添加线程池配置
+thread-pool:
+  core-pool-size: 10
+  max-pool-size: 20
+  queue-capacity: 100
+  keep-alive-seconds: 300

@@ -2,10 +2,8 @@ package com.yxhpy.crawl_start.utils;
 
 import com.yxhpy.crawl_start.entity.ParseHtmlValueDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
-import io.netty.util.internal.shaded.org.jctools.util.RangeUtil;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.internal.operators.observable.ObservableIntervalRange;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.Synchronized;
 import okhttp3.*;
@@ -100,6 +98,9 @@ public class UrlDownload {
             List<RequestUrlValueDTO> run = urlDownload.run(collect);
             HtmlParse htmlParse = new HtmlParse();
             List<ParseHtmlValueDTO> run1 = htmlParse.run(run);
+            for (ParseHtmlValueDTO parseHtmlValueDTO : run1) {
+                System.out.printf("%s %s\n", parseHtmlValueDTO.getTitle(), parseHtmlValueDTO.getUrl());
+            }
             collect = run1.stream().map(ParseHtmlValueDTO::getUrls).flatMap(List::stream).collect(Collectors.toList());
             collect = collect.subList(0, Math.min(collect.size(), 100));
             System.out.println(collect.size());

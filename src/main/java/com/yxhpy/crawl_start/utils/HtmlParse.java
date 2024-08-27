@@ -1,15 +1,10 @@
 package com.yxhpy.crawl_start.utils;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
-import com.yxhpy.crawl_start.entity.ParseHtmlDTO;
 import com.yxhpy.crawl_start.entity.ParseHtmlValueDTO;
-import com.yxhpy.crawl_start.entity.RequestUrlDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,7 +34,8 @@ public class HtmlParse {
                 Set<String> links = new HashSet<>(); // 使用 Set 来自动去重
                 Document doc = Jsoup.parse(parseHtml.getHtml());
                 Elements elements = doc.select("a[href]");
-
+                Elements title = doc.select("title");
+                String text = title.text();
                 for (Element element : elements) {
                     String href = element.attr("href");
                     // 使用正则表达式匹配形如 "https://www.example.com" 的链接
@@ -55,6 +51,7 @@ public class HtmlParse {
                     }
                 }
                 parseHtmlValueDTO.setUrls(new ArrayList<>(links)); // 将 Set 转换为 List
+                parseHtmlValueDTO.setTitle(text);
                 emitter.onNext(parseHtmlValueDTO);
                 emitter.onComplete();
             } catch (Exception e) {
