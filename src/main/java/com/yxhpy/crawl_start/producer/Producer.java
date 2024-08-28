@@ -34,6 +34,10 @@ public class Producer {
         }
     }
 
+    public void sendMessageRetryRequestUrl(String topic, RequestUrlDTO requestUrlDTO) {
+        kafkaTemplate.send(topic, requestUrlDTO.getUrl(), requestUrlDTO);
+    }
+
     public void sendMessageParseHtml(String topic, RequestUrlValueDTO requestUrlValueDTO) {
         kafkaTemplate.send(topic, requestUrlValueDTO.getUrl(), requestUrlValueDTO);
     }

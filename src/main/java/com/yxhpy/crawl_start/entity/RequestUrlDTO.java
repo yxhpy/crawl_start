@@ -11,4 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RequestUrlDTO {
     private String url;
+    private Integer retryTimes = 0;
+    public void addRetryTimes() {
+        retryTimes++;
+    }
 }

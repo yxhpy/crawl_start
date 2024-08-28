@@ -1,5 +1,6 @@
 package com.yxhpy.crawl_start.config;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,26 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, T> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setBatchListener(true); // 启用批量监听
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL); // 设置手动提交
+        return factory;
+    }
+
+
+    @Bean
+    public <T> ConsumerFactory<String, T> consumerFactory2() {
+        Map<String, Object> props = kafkaProperties.getConsumer().buildProperties();
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 20);
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+
+    @Bean
+    public <T> ConcurrentKafkaListenerContainerFactory<String, T> kafkaListenerContainerFactory2() {
+        ConcurrentKafkaListenerContainerFactory<String, T> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory2());
         factory.setBatchListener(true); // 启用批量监听
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL); // 设置手动提交
         return factory;
