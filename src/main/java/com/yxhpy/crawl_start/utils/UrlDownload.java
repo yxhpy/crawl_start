@@ -36,7 +36,7 @@ public class UrlDownload {
                 .build();
     }
 
-    private final Semaphore finalSemaphore = new Semaphore(10); // 限制并发请求数
+    private final Semaphore finalSemaphore = new Semaphore(100); // 限制并发请求数
     private final Semaphore finalSemaphoreRetry = new Semaphore(10); // 限制并发请求数
 
 
