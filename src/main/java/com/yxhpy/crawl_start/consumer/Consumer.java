@@ -1,6 +1,5 @@
 package com.yxhpy.crawl_start.consumer;
 
-import com.yxhpy.crawl_start.entity.ParseHtmlDTO;
 import com.yxhpy.crawl_start.entity.ParseHtmlValueDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
@@ -37,9 +36,11 @@ public class Consumer {
     @KafkaListener(topics = KTopics.REQUEST_URL, containerFactory = "kafkaListenerContainerFactory")
     public void requestUrl(List<ConsumerRecord<String, RequestUrlDTO>> records, Acknowledgment ack) {
         log.info("接受到请求任务{}个", records.size());
+        long start = System.currentTimeMillis();
         List<RequestUrlDTO> collect = records.stream().map(ConsumerRecord::value).collect(Collectors.toList());
         List<RequestUrlValueDTO> run = urlDownload.run(collect);
         ack.acknowledge();
+        log.info("接受到请求任务{}个,成功{}个,耗时{}ms", records.size(), run.size(), System.currentTimeMillis() - start);
         for (RequestUrlValueDTO requestUrlValueDTO : run) {
             producer.sendMessageParseHtml(KTopics.PARSE_HTML, requestUrlValueDTO);
         }
@@ -48,7 +49,14 @@ public class Consumer {
     @KafkaListener(topics = KTopics.RETRY_PARSE_HTML, containerFactory = "kafkaListenerContainerFactory2")
     public void retryRequestUrl(List<ConsumerRecord<String, RequestUrlDTO>> records, Acknowledgment ack) {
         log.info("接受到重试任务{}个", records.size());
-        requestUrl(records, ack);
+        long start = System.currentTimeMillis();
+        List<RequestUrlDTO> collect = records.stream().map(ConsumerRecord::value).collect(Collectors.toList());
+        List<RequestUrlValueDTO> run = urlDownload.run(collect);
+        ack.acknowledge();
+        log.info("接受到重试任务{}个,成功{}个,耗时{}ms", records.size(), run.size(), System.currentTimeMillis() - start);
+        for (RequestUrlValueDTO requestUrlValueDTO : run) {
+            producer.sendMessageParseHtml(KTopics.PARSE_HTML, requestUrlValueDTO);
+        }
     }
 
     @KafkaListener(topics = KTopics.PARSE_HTML)

@@ -30,13 +30,26 @@ public class UrlDownload {
     static {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         client = builder
-                .callTimeout(3, TimeUnit.SECONDS)
+                .connectTimeout(3, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS)
                 .build();
     }
 
-    private final Semaphore semaphore = new Semaphore(10); // 限制并发请求数
+    private final Semaphore finalSemaphore = new Semaphore(10); // 限制并发请求数
+    private final Semaphore finalSemaphoreRetry = new Semaphore(10); // 限制并发请求数
+
+
+    private Semaphore getSemaphore(RequestUrlDTO requestUrlDTO) {
+        if (requestUrlDTO.getRetryTimes() == 0) {
+            return finalSemaphore;
+        } else {
+            return finalSemaphoreRetry;
+        }
+    }
 
     public Observable<RequestUrlValueDTO> request(RequestUrlDTO requestUrlDTO) {
+        Semaphore semaphore = getSemaphore(requestUrlDTO);
         String url = requestUrlDTO.getUrl();
         return Observable.create((emitter -> {
             try {
@@ -78,19 +91,11 @@ public class UrlDownload {
 
     public Observable<RequestUrlValueDTO> requestAndRetry(RequestUrlDTO url) {
         return request(url)
-                .retryWhen(errors -> errors.zipWith(Observable.range(1, 3), (n, i) -> {
-                            log.debug("访问第{}次，发生错误:{}", i, n.getMessage());
-                            if (i >= 1) {
-                                // 这里直接丢弃到重试队列中，防止长时间阻塞正常运行，导致判定被死亡
-                                if (url.getRetryTimes() < 3) {
-                                    url.addRetryTimes();
-                                    producer.sendMessageRetryRequestUrl(KTopics.RETRY_PARSE_HTML, url);
-                                }
-                                throw n;
-                            }
-                            return i;
-                        })
-                        .flatMap(i -> Observable.timer((long) Math.pow(2, i), TimeUnit.SECONDS)))
+                .doOnError(throwable -> {
+                    if (url.getRetryTimes() < 3) {
+                        producer.sendMessageRetryRequestUrl(KTopics.RETRY_PARSE_HTML, url);
+                    }
+                })
                 .onErrorResumeNext(throwable -> {
                     log.error("Error after retries for URL {}: {}", url, throwable.getMessage());
                     return Observable.empty(); // 返回空 Observable 而不是错误
@@ -98,7 +103,6 @@ public class UrlDownload {
     }
 
 
-    @Synchronized
     public List<RequestUrlValueDTO> run(List<RequestUrlDTO> urls) {
         List<RequestUrlValueDTO> results = new CopyOnWriteArrayList<>();
         CountDownLatch latch = new CountDownLatch(urls.size());
