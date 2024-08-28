@@ -97,7 +97,7 @@ public class UrlDownload {
                     }
                 })
                 .onErrorResumeNext(throwable -> {
-                    log.error("Error after retries for URL {}: {}", url, throwable.getMessage());
+                    log.debug("Error after retries for URL {}: {}", url, throwable.getMessage());
                     return Observable.empty(); // 返回空 Observable 而不是错误
                 });
     }

@@ -40,7 +40,7 @@ spring:
 
 logging:
   level:
-    org.springframework.kafka: DEBUG
+    org.springframework.kafka: INFO
 
 # 添加线程池配置
 thread-pool:
