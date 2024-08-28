@@ -18,13 +18,14 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      max-poll-records: 100
+      max-poll-records: 500
       heartbeat-interval: 3000
       properties:
         partition.assignment.strategy: org.apache.kafka.clients.consumer.CooperativeStickyAssignor  # 使用协作式分配器
         max.poll.interval.ms: 300000  # 增加轮询间隔，允许更长的处理时间
       fetch-min-size: 1
       fetch-max-wait: 500
+
   redis:
     host: 192.168.3.62
     database: 0
@@ -39,7 +40,7 @@ spring:
 
 logging:
   level:
-    org.springframework.kafka: DEBUG
+    org.springframework.kafka: INFO
 
 # 添加线程池配置
 thread-pool:
