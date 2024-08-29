@@ -5,8 +5,13 @@
     <groupId>com.yxhpy</groupId>
     <artifactId>crawl_start</artifactId>
     <version>0.0.1</version>
+    <packaging>pom</packaging>
     <name>crawl_start</name>
     <description>crawl_start</description>
+    <modules>
+        <module>parse_html</module>
+        <module>download_url</module>
+    </modules>
     <properties>
         <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,6 +60,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ch.ethz.ganymed</groupId>
+            <artifactId>ganymed-ssh2</artifactId>
+            <version>262</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
