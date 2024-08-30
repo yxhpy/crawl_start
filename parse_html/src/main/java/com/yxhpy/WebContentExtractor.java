@@ -5,13 +5,21 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class WebContentExtractor {
+    private static void extractText(Element element, StringBuilder textBuilder) {
+        if (!element.ownText().isEmpty()) {
+            textBuilder.append(element.ownText()).append(" ");
+        }
+        Elements children = element.children();
+        for (Element child : children) {
+            extractText(child, textBuilder);
+        }
+    }
 
-    public static Map<String, String> extractContent(String html) throws IOException {
+    public static Map<String, String> extractContent(String html) {
         Map<String, String> content = new HashMap<>();
 
         Document doc = Jsoup.parse(html);
@@ -37,35 +45,15 @@ public class WebContentExtractor {
 
         // 提取正文
         // 这里使用一个简单的启发式方法，可能需要根据具体网站结构调整
-        Elements paragraphs = doc.select("article p, div.content p, div.article-content p");
-        if (paragraphs.isEmpty()) {
-            paragraphs = doc.select("p");
-        }
-        StringBuilder mainContent = new StringBuilder();
-        for (Element paragraph : paragraphs) {
-            mainContent.append(paragraph.text()).append("\n");
-        }
-        content.put("main_content", mainContent.toString().trim());
-
+        StringBuilder textBuilder = new StringBuilder();
+        // 提取 <body> 中的文本
+        Element body = doc.body();
+        extractText(body, textBuilder);
+        String text = textBuilder.toString();
+        text = text.replaceAll("[^\\p{L}\\p{N}\\s]", "");
+        content.put("main_content", text);
         return content;
     }
 
-    public static void main(String[] args) {
-        try {
-            String url = "https://example.com"; // 替换为你想要提取内容的网页 URL
-            Map<String, String> extractedContent = extractContent(url);
-
-            System.out.println("标题: " + extractedContent.get("title"));
-            System.out.println("正文: " + extractedContent.get("main_content"));
-
-            for (Map.Entry<String, String> entry : extractedContent.entrySet()) {
-                if (entry.getKey().startsWith("meta_")) {
-                    System.out.println(entry.getKey() + ": " + entry.getValue());
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
 

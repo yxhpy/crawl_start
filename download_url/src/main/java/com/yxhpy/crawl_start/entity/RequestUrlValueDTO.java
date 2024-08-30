@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,4 +15,7 @@ import lombok.NoArgsConstructor;
 public class RequestUrlValueDTO {
     private String url;
     private String html;
+    private List<String> words;
+    private Map<String, Integer> bagOfWords;
+    private List<Object[]> topWords;
 }
