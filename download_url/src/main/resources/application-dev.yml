@@ -1,7 +1,7 @@
 spring:
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: 192.168.3.75:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       batch-size: 16384
@@ -12,7 +12,7 @@ spring:
         max.request.size: 20971520
       acks: "all"
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: 192.168.3.75:9092
       enable-auto-commit: false
       group-id: consumer-dev
       auto-offset-reset: earliest
@@ -27,9 +27,9 @@ spring:
       fetch-max-wait: 500
 
   redis:
-    host: localhost
-    database: 8
-    password:
+    host: 192.168.3.75
+    database: 0
+    password: 520612lgh
     timeout: 300000  # 添加连接超时时间（毫秒）
     lettuce: # 使用Lettuce客户端
       pool:

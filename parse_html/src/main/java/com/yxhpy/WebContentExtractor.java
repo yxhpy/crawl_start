@@ -1,10 +1,19 @@
 package com.yxhpy;
 
+import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.html.HtmlParser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,13 +54,12 @@ public class WebContentExtractor {
 
         // 提取正文
         // 这里使用一个简单的启发式方法，可能需要根据具体网站结构调整
-        StringBuilder textBuilder = new StringBuilder();
-        // 提取 <body> 中的文本
-        Element body = doc.body();
-        extractText(body, textBuilder);
-        String text = textBuilder.toString();
-        text = text.replaceAll("[^\\p{L}\\p{N}\\s]", "");
-        content.put("main_content", text);
+        Tika tika = new Tika();
+        try (ByteArrayInputStream stream = new ByteArrayInputStream(html.getBytes())) {
+            content.put("main_content", tika.parseToString(stream).replaceAll("\\s+", " "));
+        } catch (TikaException | IOException e) {
+            content.put("main_content", "");
+        }
         return content;
     }
 

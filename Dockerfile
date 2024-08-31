@@ -1,4 +1,4 @@
 FROM openjdk:11-jre-slim
 WORKDIR /app
-COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+COPY download_url/target/*.jar app.jar
+ENTRYPOINT ["java","-jar", "–Dspring.profiles.active=test", "app.jar"]

@@ -7,7 +7,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class TextPreprocessor {

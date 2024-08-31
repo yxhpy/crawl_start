@@ -4,11 +4,14 @@ package com.yxhpy.crawl_start.producer;
 import com.yxhpy.crawl_start.entity.RequestUrlDTO;
 import com.yxhpy.crawl_start.entity.RequestUrlValueDTO;
 import com.yxhpy.crawl_start.service.RedisService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+
+@Slf4j
 @Component
 public class Producer {
     @Resource
@@ -29,6 +32,7 @@ public class Producer {
                     .addCallback((result -> {
                         // 发送成功就将其添加到redis中，防止重复添加
                     }), ex -> {
+                        log.error(ex.getMessage());
                         redisService.removeUrl(url);
                     });
         }

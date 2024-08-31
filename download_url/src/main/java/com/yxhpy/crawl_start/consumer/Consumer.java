@@ -79,7 +79,7 @@ public class Consumer {
     }
 
 
-    @KafkaListener(topics = KTopics.PARSE_HTML, groupId = "parse_test_01")
+    @KafkaListener(topics = KTopics.PARSE_HTML, groupId = "parse_test_02")
     public void parseWords(List<ConsumerRecord<String, RequestUrlValueDTO>> records, Acknowledgment ack) {
         log.info("接受到解析网页分词{}个", records.size());
         long start = System.currentTimeMillis();
@@ -89,10 +89,9 @@ public class Consumer {
             String html = value.getHtml();
             String url = value.getUrl();
             Map<String, String> map = WebContentExtractor.extractContent(html);
-            String mainContent = map.get("main_content");
+            String mainContent = map.getOrDefault("meta_description", map.get("main_content"));
             List<String> words = TextPreprocessor.preprocess(mainContent);
             // 词频率
-
             Map<String, Integer> bagOfWords = new HashMap<>();
             for (String word : words) {
                 bagOfWords.put(word, bagOfWords.getOrDefault(word, 0) + 1);

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static com.yxhpy.crawl_start.kconst.RConst.*;
 
@@ -57,9 +58,22 @@ public class RedisService {
         redisTemplate.opsForSet().add(IDF_URL + ":" + word, url.toArray(new String[0]));
     }
 
+    public Set<String> getWordUrls(String word) {
+        return redisTemplate.opsForSet().members(IDF_URL + ":" + word);
+    }
+
+    public Set<String> inter(Set<String> word) {
+        Set<String> collect = word.stream().map(i -> IDF_URL + ":" + i).collect(Collectors.toSet());
+        return redisTemplate.opsForSet().intersect(collect);
+    }
+
 
     public Long getWordInPageSize(String word) {
-        return redisTemplate.opsForSet().size(IDF_URL + ":" + word);
+        Long size = redisTemplate.opsForSet().size(IDF_URL + ":" + word);
+        if (size == null) {
+            return 1L;
+        }
+        return size + 1;
     }
 
     public Long getPageCount() {
@@ -83,6 +97,6 @@ public class RedisService {
 
 
     public Double getWordIDF(String word) {
-        return getPageCount() / (double) getWordInPageSize(word);
+        return Math.log((double) getPageCount() / getWordInPageSize(word));
     }
 }
