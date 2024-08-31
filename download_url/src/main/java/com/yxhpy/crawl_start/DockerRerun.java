@@ -24,7 +24,8 @@ public class DockerRerun {
                     .collect(Collectors.joining(" "));
             GanymedExample.executeCommand(host, username, password, String.format("docker stop %s", taskIds));
             GanymedExample.executeCommand(host, username, password, String.format("docker rm %s", taskIds));
-            GanymedExample.executeCommand(host, username, password, "docker pull yxhpy520/crawl_start:latest");
+            String s = GanymedExample.executeCommand(host, username, password, "docker pull yxhpy520/crawl_start:latest");
+            System.out.println(s);
             GanymedExample.executeCommand(host, username, password, "docker run -d yxhpy520/crawl_start:latest");
         }
     }
