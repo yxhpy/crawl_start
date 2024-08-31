@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 public class DockerRerun {
     public static void main(String[] args) throws Exception {
         List<String> list = Arrays.asList(
-                "192.168.3.64",
-                "192.168.3.73",
-                "192.168.3.57",
-                "192.168.3.75"
+                "192.168.3.64"
+//                "192.168.3.73",
+//                "192.168.3.57",
+//                "192.168.3.75"
         );
         String username = "root";
         String password = "520612";
@@ -24,8 +24,8 @@ public class DockerRerun {
                     .collect(Collectors.joining(" "));
             GanymedExample.executeCommand(host, username, password, String.format("docker stop %s", taskIds));
             GanymedExample.executeCommand(host, username, password, String.format("docker rm %s", taskIds));
-//            GanymedExample.executeCommand(host, username, password, "docker pull yxhpy520/crawl_start:latest");
-//            GanymedExample.executeCommand(host, username, password, "docker run -d yxhpy520/crawl_start:latest");
+            GanymedExample.executeCommand(host, username, password, "docker pull yxhpy520/crawl_start:latest");
+            GanymedExample.executeCommand(host, username, password, "docker run -d yxhpy520/crawl_start:latest");
         }
     }
 }

@@ -67,9 +67,7 @@
             <groupId>com.yxhpy</groupId>
             <artifactId>parse_html</artifactId>
             <version>0.0.1</version>
-            <scope>compile</scope>
         </dependency>
-
     </dependencies>
     <dependencyManagement>
         <dependencies>
